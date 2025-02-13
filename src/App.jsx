@@ -40,7 +40,7 @@ function App() {
 
   const fetchEmployees = async () => {
     try {
-      const response = await axios.get('http://localhost:3000/employees');
+      const response = await axios.get('https://backend-empleados-mi82.onrender.com/employees');
       setEmployees(response.data);
       setFilteredEmployees(response.data); // Initialize filteredEmployees with all employees
       console.log(response.data);
@@ -93,7 +93,7 @@ function App() {
     try {
       if (!checkData()) return;
 
-      const response = await axios.post('http://localhost:3000/employees', formData);
+      const response = await axios.post('https://backend-empleados-mi82.onrender.com/employees', formData);
       console.log(response.data);
       fetchEmployees();
       setFormData(initialFormState);
@@ -105,7 +105,7 @@ function App() {
   const editEmployee = async (id) => {
     try {
       if (!checkDataEdit) return;
-      const response = await axios.put(`http://localhost:3000/employees/${id}`, editFormData);
+      const response = await axios.put(`https://backend-empleados-mi82.onrender.com/employees/${id}`, editFormData);
       console.log(response.data);
       fetchEmployees();
     } catch (error) {
@@ -118,7 +118,7 @@ function App() {
     if (!confirmed) return;
 
     try {
-      const response = await axios.post(`http://localhost:3000/employees/${id}/delete`);
+      const response = await axios.post(`https://backend-empleados-mi82.onrender.com/employees/${id}/delete`);
       console.log(response.data);
       fetchEmployees();
     } catch (error) {
