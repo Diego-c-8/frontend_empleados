@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './App.css';
+import { Container, Row, Col, Button, Table, Modal, Form } from 'react-bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
   const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [employees, setEmployees] = useState([]);
+  const [filteredEmployees, setFilteredEmployees] = useState([]);
+
   const [formData, setFormData] = useState({
     nombre: '',
     posicion: '',
@@ -15,6 +18,7 @@ function App() {
   });
 
   const [editFormData, setEditFormData] = useState({
+    _id: '',
     nombre: '',
     posicion: '',
     salario: 0,
@@ -24,7 +28,6 @@ function App() {
 
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [filteredEmployees, setFilteredEmployees] = useState([]);
 
   const initialFormState = {
     nombre: '',
@@ -42,8 +45,7 @@ function App() {
     try {
       const response = await axios.get('https://backend-empleados-mi82.onrender.com/employees');
       setEmployees(response.data);
-      setFilteredEmployees(response.data); // Initialize filteredEmployees with all employees
-      console.log(response.data);
+      setFilteredEmployees(response.data);
     } catch (error) {
       if (error.response) {
         console.error('Error de respuesta:', error.response.status);
@@ -55,7 +57,6 @@ function App() {
 
   const checkData = () => {
     const errors = [];
-
     if (!formData.nombre.trim()) errors.push("Nombre es requerido");
     if (!formData.posicion.trim()) errors.push("Posición es requerida");
     if (Number(formData.salario) <= 0) errors.push("Salario debe ser mayor que 0");
@@ -67,13 +68,11 @@ function App() {
       setFormData(initialFormState);
       return false;
     }
-
     return true;
   };
 
   const checkDataEdit = () => {
     const errors = [];
-
     if (!editFormData.nombre.trim()) errors.push("Nombre es requerido");
     if (!editFormData.posicion.trim()) errors.push("Posición es requerida");
     if (Number(editFormData.salario) <= 0) errors.push("Salario debe ser mayor que 0");
@@ -85,81 +84,50 @@ function App() {
       setEditFormData(initialFormState);
       return false;
     }
-
     return true;
   };
 
-  const addEmployee = async () => {
+  const addEmployee = async (e) => {
+    e.preventDefault();
+    if (!checkData()) return;
     try {
-      if (!checkData()) return;
-
-      const response = await axios.post('https://backend-empleados-mi82.onrender.com/employees', formData);
-      console.log(response.data);
+      await axios.post('https://backend-empleados-mi82.onrender.com/employees', formData);
       fetchEmployees();
       setFormData(initialFormState);
+      setShowModal(false);
     } catch (error) {
       console.error('Error:', error);
     }
-  }
+  };
 
-  const editEmployee = async (id) => {
+  const editEmployee = async (e) => {
+    e.preventDefault();
+    if (!checkDataEdit()) return;
     try {
-      if (!checkDataEdit) return;
-      const response = await axios.put(`https://backend-empleados-mi82.onrender.com/employees/${id}`, editFormData);
-      console.log(response.data);
+      await axios.put(`https://backend-empleados-mi82.onrender.com/employees/${editFormData._id}`, editFormData);
       fetchEmployees();
+      setShowEditModal(false);
     } catch (error) {
       console.error('Error:', error);
     }
-  }
+  };
 
   const deleteEmployee = async (id) => {
     const confirmed = window.confirm("¿Estás seguro de eliminar este empleado?");
     if (!confirmed) return;
-
     try {
-      const response = await axios.post(`https://backend-empleados-mi82.onrender.com/employees/${id}/delete`);
-      console.log(response.data);
+      await axios.post(`https://backend-empleados-mi82.onrender.com/employees/${id}/delete`);
       fetchEmployees();
     } catch (error) {
       console.error('Error:', error);
     }
-  }
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setEmployees([...employees, formData]);
-    setFormData({
-      nombre: '',
-      posicion: '',
-      salario: '',
-      sexo: '',
-      fecha_de_ingreso: ''
-    });
-
-    setShowModal(false);
-  }
-
-  const handleEditSubmit = (e) => {
-    e.preventDefault();
-    editEmployee(editFormData._id);
-    setEditFormData({
-      nombre: '',
-      posicion: '',
-      salario: '',
-      sexo: '',
-      fecha_de_ingreso: ''
-    });
-
-    setShowEditModal(false);
-  }
+  };
 
   const handleFilter = () => {
     const filtered = employees.filter(employee => {
       const ingresoDate = new Date(employee.fecha_de_ingreso);
       const start = startDate ? new Date(startDate) : null;
       const end = endDate ? new Date(endDate) : null;
-
       if (start && end) {
         return ingresoDate >= start && ingresoDate <= end;
       } else if (start) {
@@ -169,183 +137,224 @@ function App() {
       }
       return true;
     });
-
     setFilteredEmployees(filtered);
-  }
+  };
 
   return (
-    <div>
-      <h1>Empleados</h1>
-      <div>
-        <input
-          type="date"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          placeholder="Fecha de inicio"
-        />
-        <input
-          type="date"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-          placeholder="Fecha de fin"
-        />
-        <button onClick={handleFilter}>Filtrar</button>
-        <button onClick={() => setShowModal(true)}>Agregar Empleado</button>
-      </div>
+    <Container className="mt-4">
+      <Row className="mb-4">
+        <Col>
+          <h1>Empleados</h1>
+        </Col>
+      </Row>
+      <Row className="mb-3 align-items-end">
+        <Col md={3}>
+          <Form.Group controlId="startDate">
+            <Form.Label>Fecha de inicio</Form.Label>
+            <Form.Control 
+              type="date" 
+              value={startDate} 
+              onChange={(e) => setStartDate(e.target.value)} 
+            />
+          </Form.Group>
+        </Col>
+        <Col md={3}>
+          <Form.Group controlId="endDate">
+            <Form.Label>Fecha de fin</Form.Label>
+            <Form.Control 
+              type="date" 
+              value={endDate} 
+              onChange={(e) => setEndDate(e.target.value)} 
+            />
+          </Form.Group>
+        </Col>
+        <Col md={3}>
+          <Button variant="primary" onClick={handleFilter}>
+            Filtrar
+          </Button>
+        </Col>
+        <Col md={3} className="text-end">
+          <Button variant="success" onClick={() => setShowModal(true)}>
+            Agregar Empleado
+          </Button>
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+          <Table striped bordered hover responsive>
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Posición</th>
+                <th>Salario</th>
+                <th>Sexo</th>
+                <th>Fecha de Ingreso</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredEmployees.map((employee, index) => (
+                <tr key={index}>
+                  <td>{employee.nombre}</td>
+                  <td>{employee.posicion}</td>
+                  <td>${employee.salario}</td>
+                  <td>{employee.sexo}</td>
+                  <td>{new Date(employee.fecha_de_ingreso).toLocaleDateString()}</td>
+                  <td>
+                    <Button 
+                      variant="warning" 
+                      size="sm" 
+                      className="me-2"
+                      onClick={() => {
+                        setEditFormData(employee);
+                        setShowEditModal(true);
+                      }}
+                    >
+                      Editar
+                    </Button>
+                    <Button 
+                      variant="danger" 
+                      size="sm"
+                      onClick={() => deleteEmployee(employee._id)}
+                    >
+                      Eliminar
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </Col>
+      </Row>
 
-      {showModal && (
-        <div className="modal">
-          <div className="modal-content">
-            <span className="close" onClick={() => setShowModal(false)}>&times;</span>
-            <h2>Agregar Empleado</h2>
-            <form onSubmit={handleSubmit}>
-              <input
-                type="text"
-                placeholder="Nombre"
+      {/* Add Employee Modal */}
+      <Modal show={showModal} onHide={() => setShowModal(false)}>
+        <Form onSubmit={addEmployee}>
+          <Modal.Header closeButton>
+            <Modal.Title>Agregar Empleado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form.Group className="mb-3" controlId="formNombre">
+              <Form.Label>Nombre</Form.Label>
+              <Form.Control 
+                type="text" 
+                placeholder="Nombre" 
                 value={formData.nombre}
-                onChange={(e) =>
-                  setFormData({ ...formData, nombre: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
               />
-              <input
-                type="text"
-                placeholder="Posición"
+            </Form.Group>
+            <Form.Group className="mb-3" controlId="formPosicion">
+              <Form.Label>Posición</Form.Label>
+              <Form.Control 
+                type="text" 
+                placeholder="Posición" 
                 value={formData.posicion}
-                onChange={(e) =>
-                  setFormData({ ...formData, posicion: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, posicion: e.target.value })}
               />
-              <input
-                type="number"
-                placeholder="Salario"
+            </Form.Group>
+            <Form.Group className="mb-3" controlId="formSalario">
+              <Form.Label>Salario</Form.Label>
+              <Form.Control 
+                type="number" 
+                placeholder="Salario" 
                 value={formData.salario}
-                onChange={(e) =>
-                  setFormData({ ...formData, salario: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, salario: e.target.value })}
               />
-              <input
-                type="text"
-                placeholder="Sexo"
+            </Form.Group>
+            <Form.Group className="mb-3" controlId="formSexo">
+              <Form.Label>Sexo</Form.Label>
+              <Form.Control 
+                type="text" 
+                placeholder="Sexo (M/F)" 
                 value={formData.sexo}
-                onChange={(e) =>
-                  setFormData({ ...formData, sexo: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, sexo: e.target.value })}
               />
-              <input
-                type="date"
+            </Form.Group>
+            <Form.Group className="mb-3" controlId="formFecha">
+              <Form.Label>Fecha de Ingreso</Form.Label>
+              <Form.Control 
+                type="date" 
                 value={formData.fecha_de_ingreso}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    fecha_de_ingreso: e.target.value,
-                  })
-                }
+                onChange={(e) => setFormData({ ...formData, fecha_de_ingreso: e.target.value })}
               />
-              <button type="submit" onClick={addEmployee}>
-                Agregar
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
+            </Form.Group>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowModal(false)}>
+              Cancelar
+            </Button>
+            <Button variant="primary" type="submit">
+              Agregar
+            </Button>
+          </Modal.Footer>
+        </Form>
+      </Modal>
 
-      {showEditModal && (
-        <div className="modal">
-          <div className="modal-content">
-            <span className="close" onClick={() => setShowEditModal(false)}>
-              &times;
-            </span>
-            <h2>Editar Empleado</h2>
-            <form onSubmit={handleEditSubmit}>
-              <input
-                type="text"
-                placeholder="Nombre"
+      {/* Edit Employee Modal */}
+      <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
+        <Form onSubmit={editEmployee}>
+          <Modal.Header closeButton>
+            <Modal.Title>Editar Empleado</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form.Group className="mb-3" controlId="editFormNombre">
+              <Form.Label>Nombre</Form.Label>
+              <Form.Control 
+                type="text" 
+                placeholder="Nombre" 
                 value={editFormData.nombre}
-                onChange={(e) =>
-                  setEditFormData({ ...editFormData, nombre: e.target.value })
-                }
+                onChange={(e) => setEditFormData({ ...editFormData, nombre: e.target.value })}
               />
-              <input
-                type="text"
-                placeholder="Posición"
+            </Form.Group>
+            <Form.Group className="mb-3" controlId="editFormPosicion">
+              <Form.Label>Posición</Form.Label>
+              <Form.Control 
+                type="text" 
+                placeholder="Posición" 
                 value={editFormData.posicion}
-                onChange={(e) =>
-                  setEditFormData({ ...editFormData, posicion: e.target.value })
-                }
+                onChange={(e) => setEditFormData({ ...editFormData, posicion: e.target.value })}
               />
-              <input
-                type="number"
-                placeholder="Salario"
+            </Form.Group>
+            <Form.Group className="mb-3" controlId="editFormSalario">
+              <Form.Label>Salario</Form.Label>
+              <Form.Control 
+                type="number" 
+                placeholder="Salario" 
                 value={editFormData.salario}
-                onChange={(e) =>
-                  setEditFormData({ ...editFormData, salario: e.target.value })
-                }
+                onChange={(e) => setEditFormData({ ...editFormData, salario: e.target.value })}
               />
-              <input
-                type="text"
-                placeholder="Sexo"
+            </Form.Group>
+            <Form.Group className="mb-3" controlId="editFormSexo">
+              <Form.Label>Sexo</Form.Label>
+              <Form.Control 
+                type="text" 
+                placeholder="Sexo (M/F)" 
                 value={editFormData.sexo}
-                onChange={(e) =>
-                  setEditFormData({ ...editFormData, sexo: e.target.value })
-                }
+                onChange={(e) => setEditFormData({ ...editFormData, sexo: e.target.value })}
               />
-              <input
-                type="date"
+            </Form.Group>
+            <Form.Group className="mb-3" controlId="editFormFecha">
+              <Form.Label>Fecha de Ingreso</Form.Label>
+              <Form.Control 
+                type="date" 
                 value={editFormData.fecha_de_ingreso}
-                onChange={(e) =>
-                  setEditFormData({
-                    ...editFormData,
-                    fecha_de_ingreso: e.target.value,
-                  })
-                }
+                onChange={(e) => setEditFormData({ ...editFormData, fecha_de_ingreso: e.target.value })}
               />
-              <button type="submit" onClick={() => editEmployee(editFormData._id)}>Guardar</button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      <table>
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Posición</th>
-            <th>Salario</th>
-            <th>Sexo</th>
-            <th>Fecha de Ingreso</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredEmployees.map((employee, index) => (
-            <tr key={index}>
-              <td>{employee.nombre}</td>
-              <td>{employee.posicion}</td>
-              <td>${employee.salario}</td>
-              <td>{employee.sexo}</td>
-              <td>
-                {new Date(employee.fecha_de_ingreso).toLocaleDateString()}
-              </td>
-              <td>
-                <button
-                  className="edit-btn"
-                  onClick={() => {
-                    setEditFormData(employee);
-                    setShowEditModal(true);
-                  }}
-                >
-                  Editar
-                </button>
-                <button onClick={() => deleteEmployee(employee._id)}>
-                  Eliminar
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+            </Form.Group>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowEditModal(false)}>
+              Cancelar
+            </Button>
+            <Button variant="primary" type="submit">
+              Guardar
+            </Button>
+          </Modal.Footer>
+        </Form>
+      </Modal>
+    </Container>
   );
 }
 
 export default App;
+
