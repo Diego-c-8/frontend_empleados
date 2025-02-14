@@ -29,14 +29,6 @@ function App() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
-  const initialFormState = {
-    nombre: '',
-    posicion: '',
-    salario: 0,
-    sexo: '',
-    fecha_de_ingreso: ''
-  };
-
   useEffect(() => {
     fetchEmployees();
   }, []);
@@ -65,7 +57,6 @@ function App() {
 
     if (errors.length > 0) {
       window.alert(errors.join('\n'));
-      setFormData(initialFormState);
       return false;
     }
     return true;
@@ -81,7 +72,6 @@ function App() {
 
     if (errors.length > 0) {
       window.alert(errors.join('\n'));
-      setEditFormData(initialFormState);
       return false;
     }
     return true;
@@ -93,7 +83,13 @@ function App() {
     try {
       await axios.post('https://backend-empleados-mi82.onrender.com/employees', formData);
       fetchEmployees();
-      setFormData(initialFormState);
+      setFormData({
+        nombre: '',
+        posicion: '',
+        salario: 0,
+        sexo: '',
+        fecha_de_ingreso: new Date().toISOString().split('T')[0]
+      });
       setShowModal(false);
     } catch (error) {
       console.error('Error:', error);
@@ -151,20 +147,20 @@ function App() {
         <Col md={3}>
           <Form.Group controlId="startDate">
             <Form.Label>Fecha de inicio</Form.Label>
-            <Form.Control 
-              type="date" 
-              value={startDate} 
-              onChange={(e) => setStartDate(e.target.value)} 
+            <Form.Control
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
             />
           </Form.Group>
         </Col>
         <Col md={3}>
           <Form.Group controlId="endDate">
             <Form.Label>Fecha de fin</Form.Label>
-            <Form.Control 
-              type="date" 
-              value={endDate} 
-              onChange={(e) => setEndDate(e.target.value)} 
+            <Form.Control
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
             />
           </Form.Group>
         </Col>
@@ -201,9 +197,9 @@ function App() {
                   <td>{employee.sexo}</td>
                   <td>{new Date(employee.fecha_de_ingreso).toLocaleDateString()}</td>
                   <td>
-                    <Button 
-                      variant="warning" 
-                      size="sm" 
+                    <Button
+                      variant="warning"
+                      size="sm"
                       className="me-2"
                       onClick={() => {
                         setEditFormData(employee);
@@ -212,8 +208,8 @@ function App() {
                     >
                       Editar
                     </Button>
-                    <Button 
-                      variant="danger" 
+                    <Button
+                      variant="danger"
                       size="sm"
                       onClick={() => deleteEmployee(employee._id)}
                     >
@@ -236,44 +232,44 @@ function App() {
           <Modal.Body>
             <Form.Group className="mb-3" controlId="formNombre">
               <Form.Label>Nombre</Form.Label>
-              <Form.Control 
-                type="text" 
-                placeholder="Nombre" 
+              <Form.Control
+                type="text"
+                placeholder="Nombre"
                 value={formData.nombre}
                 onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
               />
             </Form.Group>
             <Form.Group className="mb-3" controlId="formPosicion">
               <Form.Label>Posición</Form.Label>
-              <Form.Control 
-                type="text" 
-                placeholder="Posición" 
+              <Form.Control
+                type="text"
+                placeholder="Posición"
                 value={formData.posicion}
                 onChange={(e) => setFormData({ ...formData, posicion: e.target.value })}
               />
             </Form.Group>
             <Form.Group className="mb-3" controlId="formSalario">
               <Form.Label>Salario</Form.Label>
-              <Form.Control 
-                type="number" 
-                placeholder="Salario" 
+              <Form.Control
+                type="number"
+                placeholder="Salario"
                 value={formData.salario}
-                onChange={(e) => setFormData({ ...formData, salario: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, salario: parseInt(e.target.value) || 0 })}
               />
             </Form.Group>
             <Form.Group className="mb-3" controlId="formSexo">
               <Form.Label>Sexo</Form.Label>
-              <Form.Control 
-                type="text" 
-                placeholder="Sexo (M/F)" 
+              <Form.Control
+                type="text"
+                placeholder="Sexo (M/F)"
                 value={formData.sexo}
                 onChange={(e) => setFormData({ ...formData, sexo: e.target.value })}
               />
             </Form.Group>
             <Form.Group className="mb-3" controlId="formFecha">
               <Form.Label>Fecha de Ingreso</Form.Label>
-              <Form.Control 
-                type="date" 
+              <Form.Control
+                type="date"
                 value={formData.fecha_de_ingreso}
                 onChange={(e) => setFormData({ ...formData, fecha_de_ingreso: e.target.value })}
               />
@@ -299,44 +295,44 @@ function App() {
           <Modal.Body>
             <Form.Group className="mb-3" controlId="editFormNombre">
               <Form.Label>Nombre</Form.Label>
-              <Form.Control 
-                type="text" 
-                placeholder="Nombre" 
+              <Form.Control
+                type="text"
+                placeholder="Nombre"
                 value={editFormData.nombre}
                 onChange={(e) => setEditFormData({ ...editFormData, nombre: e.target.value })}
               />
             </Form.Group>
             <Form.Group className="mb-3" controlId="editFormPosicion">
               <Form.Label>Posición</Form.Label>
-              <Form.Control 
-                type="text" 
-                placeholder="Posición" 
+              <Form.Control
+                type="text"
+                placeholder="Posición"
                 value={editFormData.posicion}
                 onChange={(e) => setEditFormData({ ...editFormData, posicion: e.target.value })}
               />
             </Form.Group>
             <Form.Group className="mb-3" controlId="editFormSalario">
               <Form.Label>Salario</Form.Label>
-              <Form.Control 
-                type="number" 
-                placeholder="Salario" 
+              <Form.Control
+                type="number"
+                placeholder="Salario"
                 value={editFormData.salario}
-                onChange={(e) => setEditFormData({ ...editFormData, salario: e.target.value })}
+                onChange={(e) => setEditFormData({ ...editFormData, salario: parseInt(e.target.value) || 0 })}
               />
             </Form.Group>
             <Form.Group className="mb-3" controlId="editFormSexo">
               <Form.Label>Sexo</Form.Label>
-              <Form.Control 
-                type="text" 
-                placeholder="Sexo (M/F)" 
+              <Form.Control
+                type="text"
+                placeholder="Sexo (M/F)"
                 value={editFormData.sexo}
                 onChange={(e) => setEditFormData({ ...editFormData, sexo: e.target.value })}
               />
             </Form.Group>
             <Form.Group className="mb-3" controlId="editFormFecha">
               <Form.Label>Fecha de Ingreso</Form.Label>
-              <Form.Control 
-                type="date" 
+              <Form.Control
+                type="date"
                 value={editFormData.fecha_de_ingreso}
                 onChange={(e) => setEditFormData({ ...editFormData, fecha_de_ingreso: e.target.value })}
               />
@@ -357,4 +353,3 @@ function App() {
 }
 
 export default App;
-
