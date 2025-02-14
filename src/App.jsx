@@ -28,6 +28,7 @@ function App() {
 
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [searchName, setSearchName] = useState('');
 
   useEffect(() => {
     fetchEmployees();
@@ -124,14 +125,16 @@ function App() {
       const ingresoDate = new Date(employee.fecha_de_ingreso);
       const start = startDate ? new Date(startDate) : null;
       const end = endDate ? new Date(endDate) : null;
+      const matchesName = searchName ? employee.nombre.toLowerCase().includes(searchName.toLowerCase()) : true;
+      
       if (start && end) {
-        return ingresoDate >= start && ingresoDate <= end;
+        return ingresoDate >= start && ingresoDate <= end && matchesName;
       } else if (start) {
-        return ingresoDate >= start;
+        return ingresoDate >= start && matchesName;
       } else if (end) {
-        return ingresoDate <= end;
+        return ingresoDate <= end && matchesName;
       }
-      return true;
+      return matchesName;
     });
     setFilteredEmployees(filtered);
   };
@@ -144,7 +147,7 @@ function App() {
         </Col>
       </Row>
       <Row className="mb-3 align-items-end">
-        <Col md={4}>  {/* Increased from md={3} */}
+        <Col md={4}>
           <Form.Group controlId="startDate">
             <Form.Label>Fecha de inicio</Form.Label>
             <Form.Control
@@ -154,7 +157,7 @@ function App() {
             />
           </Form.Group>
         </Col>
-        <Col md={4}>  {/* Increased from md={3} */}
+        <Col md={4}>
           <Form.Group controlId="endDate">
             <Form.Label>Fecha de fin</Form.Label>
             <Form.Control
@@ -164,12 +167,22 @@ function App() {
             />
           </Form.Group>
         </Col>
-        <Col md={2}>  {/* Reduced from md={3} */}
+        <Col md={2}>
+          <Form.Group controlId="searchName">
+            <Form.Label>Buscar por nombre</Form.Label>
+            <Form.Control
+              type="text"
+              value={searchName}
+              onChange={(e) => setSearchName(e.target.value)}
+            />
+          </Form.Group>
+        </Col>
+        <Col md={1}>
           <Button variant="primary" onClick={handleFilter}>
             Filtrar
           </Button>
         </Col>
-        <Col md={2} className="text-end">  {/* Reduced from md={3} */}
+        <Col md={1} className="text-end">
           <Button variant="success" onClick={() => setShowModal(true)}>
             Agregar Empleado
           </Button>
