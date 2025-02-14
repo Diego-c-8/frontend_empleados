@@ -144,7 +144,7 @@ function App() {
         </Col>
       </Row>
       <Row className="mb-3 align-items-end">
-        <Col md={3}>
+        <Col md={4}>  {/* Increased from md={3} */}
           <Form.Group controlId="startDate">
             <Form.Label>Fecha de inicio</Form.Label>
             <Form.Control
@@ -154,7 +154,7 @@ function App() {
             />
           </Form.Group>
         </Col>
-        <Col md={3}>
+        <Col md={4}>  {/* Increased from md={3} */}
           <Form.Group controlId="endDate">
             <Form.Label>Fecha de fin</Form.Label>
             <Form.Control
@@ -164,12 +164,12 @@ function App() {
             />
           </Form.Group>
         </Col>
-        <Col md={3}>
+        <Col md={2}>  {/* Reduced from md={3} */}
           <Button variant="primary" onClick={handleFilter}>
             Filtrar
           </Button>
         </Col>
-        <Col md={3} className="text-end">
+        <Col md={2} className="text-end">  {/* Reduced from md={3} */}
           <Button variant="success" onClick={() => setShowModal(true)}>
             Agregar Empleado
           </Button>
